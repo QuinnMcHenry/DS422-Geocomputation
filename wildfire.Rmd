@@ -83,11 +83,9 @@ This dataset contains point geometries where fires were detected. Important colu
 Use ggplot to create a line plot of fires with the day on the x axis and number of fires on the y axis
 
 ```{r}
-
-```
-
-```{r}
-
+date_counts <- setNames(data.frame(table(wildfire_shp_data$ACQ_DATE)),c("Date","Count"))
+point_plot <- ggplot(date_counts, aes(Date, Count)) + geom_point()
+point_plot
 ```
 
 ------------------------------------------------------------------------
