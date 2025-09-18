@@ -83,9 +83,10 @@ This dataset contains point geometries where fires were detected. Important colu
 Use ggplot to create a line plot of fires with the day on the x axis and number of fires on the y axis
 
 ```{r}
-date_counts <- setNames(data.frame(table(wildfire_shp_data$ACQ_DATE)),c("Date","Count"))
-point_plot <- ggplot(date_counts, aes(Date, Count)) + geom_point()
-point_plot
+num_fires <- wildfire_shp_data %>% 
+  group_by(ACQ_DATE) %>% 
+  summarize(nums = n())
+ggplot(data = num_fires, aes(ACQ_DATE, nums)) + geom_line()
 ```
 
 ------------------------------------------------------------------------
@@ -95,7 +96,16 @@ point_plot
 Use ggplot to create a stacked bar chart colored by category with number of fires on the y axis for each day
 
 ```{r}
+library(ggplot2)
 
+ggplot(wildfire_shp_data, aes(x = ACQ_DATE, fill = CONFIDENCE)) +
+  geom_bar() +
+  labs(
+    x = "Date",
+    y = "Number of Fires",
+    fill = "Category",
+
+  ) 
 ```
 
 ## 📏 Map Fire Points by Confidence Level
@@ -253,7 +263,27 @@ Download the LANDSAT 30m CSV for USA (Conterminous) and Hawaii at the bottom rig
 -   Map the data with any package you would like, just make sure there is at least a slight difference from the examples above, be as creative as possible while utilizing your critical thinking
 
 ```{r}
+library(here)
+library(dplyr)
+library(ggplot2)
+df <- read.csv(here("LANDSAT_USA_contiguous_and_Hawaii_24h.csv"))
+head(data)
 
+#tile_width <- 0.2  # degrees longitude
+#tile_height <- 0.2 # degrees latitude
+
+ggplot() +
+  borders("world", colour = "gray50", fill = "gray95") + 
+  geom_tile(data = df, aes(x = longitude, y = latitude, fill = as.factor(path)),
+             color = "white") +
+  geom_point(data = df, aes(x = longitude, y = latitude), color = "red", size = 2) + 
+  scale_fill_brewer(palette = "Set2", name = "Path") +
+  labs(
+    title = "Sensor Tile Map by Path",
+    subtitle = "Acquisition Date: 2025-09-17",
+    x = "Longitude", y = "Latitude"
+  ) +
+  theme_minimal()
 ```
 
 ## ✨ Summary
