@@ -269,21 +269,15 @@ library(ggplot2)
 df <- read.csv(here("LANDSAT_USA_contiguous_and_Hawaii_24h.csv"))
 head(data)
 
-#tile_width <- 0.2  # degrees longitude
-#tile_height <- 0.2 # degrees latitude
-
 ggplot() +
   borders("world", colour = "gray50", fill = "gray95") + 
-  geom_tile(data = df, aes(x = longitude, y = latitude, fill = as.factor(path)),
-             color = "white") +
+  geom_tile(data = df, aes(x = longitude, y = latitude, fill = as.factor(path)), color = "white") +
   geom_point(data = df, aes(x = longitude, y = latitude), color = "red", size = 2) + 
-  scale_fill_brewer(palette = "Set2", name = "Path") +
   labs(
     title = "Sensor Tile Map by Path",
     subtitle = "Acquisition Date: 2025-09-17",
     x = "Longitude", y = "Latitude"
-  ) +
-  theme_minimal()
+  ) 
 ```
 
 ## ✨ Summary
@@ -300,8 +294,26 @@ ggplot() +
 
 -   What are some other test we can perform to confirm these fire predictions
 
-```{r}
 
+```{r}
+# Load required library
+library(readr)
+library(dplyr)
+library(sf)
+
+fires <- st_read(here("data/LANDSAT_USA_contiguous_and_Hawaii_7d/LANDSAT_USA_contiguous_and_Hawaii_7d.shp"))
+
+glimpse(fires)
+
+fires_filtered <- fires %>%
+  filter(ACQ_DATE == as.Date("2025-09-17"))
+
+head(fires_filtered)
 
 ```
- 
+
+
+# NASA or NOAA are great sources. Much easier to do in Python, in my humble opinion. The biggest challenge, unless you already have programs running to identify what times of the day you will get good passes over the area you want to see, is the sheer volume of imagery produced by a single satellite (scans every 15 seconds, all day, every day) and sorting through these without having an idea of how to check shapefiles / work with h5/netcdf can be overwhelming. 
+# to confirm predictions, we can use historical data to see if similar fires behaved in similar ways to how our plots predict. or use my website  http://fireaq.alaska.edu/GEOS-FP-LEAF.html to see if air quality predictions match up with where we think fires are moving, air quality / aerosol concentration will be worse with smoke
+
+
