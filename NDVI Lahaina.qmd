@@ -1,0 +1,194 @@
+---
+title: "Lahaina Wildfire"
+format: html
+editor: visual
+author: Berylin, Neris, Quinn
+---
+
+## Install + load R packages
+
+```{r}
+library(here)
+library(terra)
+library(sf)
+library(mapview)
+```
+
+# Paths to B04.jp2 & B8A.jp2 files
+
+```{r}
+# Set project root to "/Users/berylinlau/Library/Mobile Documents/com~apple~CloudDocs/Code/DS422/DS422-Geocomputation/"
+set_here("/Users/berylinlau/Library/Mobile Documents/com~apple~CloudDocs/Code/DS422/DS422-Geocomputation/")
+
+# 2022
+red_2022 <- rast(here("lahaina_data", "T04QGJ_20220828T210941_B04_20m.jp2"))
+nir_2022 <- rast(here("lahaina_data", "T04QGJ_20220828T210941_B8A_20m.jp2"))
+
+# 2023
+red_2023 <- rast(here("lahaina_data", "T04QGJ_20230803T210931_B04_20m.jp2"))
+nir_2023 <- rast(here("lahaina_data", "T04QGJ_20230803T210931_B8A_20m.jp2"))
+
+# 2024
+red_2024 <- rast(here("lahaina_data", "T04QGJ_20240807T210921_B04_20m.jp2"))
+nir_2024 <- rast(here("lahaina_data", "T04QGJ_20240807T210921_B8A_20m.jp2"))
+
+# 2025
+red_2025 <- rast(here("lahaina_data", "T04QGJ_20250802T210941_B04_20m.jp2"))
+nir_2025 <- rast(here("lahaina_data", "T04QGJ_20250802T210941_B8A_20m.jp2"))
+```
+
+# NDVI calculations
+
+```{r}
+# NDVI calculations
+ndvi_2022 <- (nir_2022 - red_2022) / (nir_2022 + red_2022)
+ndvi_2023 <- (nir_2023 - red_2023) / (nir_2023 + red_2023)
+ndvi_2024 <- (nir_2024 - red_2024) / (nir_2024 + red_2024)
+ndvi_2025 <- (nir_2025 - red_2025) / (nir_2025 + red_2025)
+```
+
+# Map NDVI
+
+```{r}
+# Tighter Maui/Lahaina extent in lat/lon
+maui_ext_latlon <- ext(-156.9, -156.3, 20.7, 21.05)  # min lon, max lon, min lat, max lat
+
+# Create temporary raster in WGS84
+temp_raster <- rast(maui_ext_latlon, crs = "EPSG:4326")
+
+# Project to match NDVI CRS
+temp_raster_utm <- project(temp_raster, crs(ndvi_2022))
+
+# Get extent in NDVI CRS
+maui_bbox <- ext(temp_raster_utm)
+
+# Crop each NDVI
+ndvi_2022_maui <- crop(ndvi_2022, maui_bbox)
+ndvi_2023_maui <- crop(ndvi_2023, maui_bbox)
+ndvi_2024_maui <- crop(ndvi_2024, maui_bbox)
+ndvi_2025_maui <- crop(ndvi_2025, maui_bbox)
+
+# Plot
+par(mfrow=c(2,2))
+plot(ndvi_2022_maui, col=rev(terrain.colors(50)), main="NDVI 2022 - Maui")
+plot(ndvi_2023_maui, col=rev(terrain.colors(50)), main="NDVI 2023 - Maui")
+plot(ndvi_2024_maui, col=rev(terrain.colors(50)), main="NDVI 2024 - Maui")
+plot(ndvi_2025_maui, col=rev(terrain.colors(50)), main="NDVI 2025 - Maui")
+```
+
+# Closer look to NDVI
+
+```{r}
+
+fact_size <- 4  # adjust for faster rendering
+
+ndvi_2022_small <- aggregate(ndvi_2022_maui, fact = fact_size, fun = mean)
+ndvi_2023_small <- aggregate(ndvi_2023_maui, fact = fact_size, fun = mean)
+ndvi_2024_small <- aggregate(ndvi_2024_maui, fact = fact_size, fun = mean)
+ndvi_2025_small <- aggregate(ndvi_2025_maui, fact = fact_size, fun = mean)
+
+# Define breaks and colors
+breaks <- c(-1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1)
+colors <- c("#4A90E2",      # Ocean / water
+            "#CD853F",      # Bare soil / urban
+            "#DEB887",      # Very sparse
+            "#F0E68C",      # Sparse
+            "#ADFF2F",      # Moderate vegetation
+            "#32CD32",      # Good vegetation
+            "#228B22",      # Dense vegetation
+            "#006400")      # Very dense
+
+# 2022
+mapview(ndvi_2022_small,
+        at = breaks,
+        col.regions = colors,
+        layer.name = "NDVI 2022",
+        alpha = 0.8)
+
+# 2023
+mapview(ndvi_2023_small,
+        at = breaks,
+        col.regions = colors,
+        layer.name = "NDVI 2023",
+        alpha = 0.8)
+
+# 2024
+mapview(ndvi_2024_small,
+        at = breaks,
+        col.regions = colors,
+        layer.name = "NDVI 2024",
+        alpha = 0.8)
+
+# 2025
+mapview(ndvi_2025_small,
+        at = breaks,
+        col.regions = colors,
+        layer.name = "NDVI 2025",
+        alpha = 0.8)
+
+```
+
+# Paths to SCL.jp2 files
+
+```{r}
+# Set project root to "/Users/berylinlau/Library/Mobile Documents/com~apple~CloudDocs/Code/DS422/DS422-Geocomputation/"
+set_here("/Users/berylinlau/Library/Mobile Documents/com~apple~CloudDocs/Code/DS422/DS422-Geocomputation/")
+
+# 2022
+scl_2022 <- rast(here("lahaina_data", "T04QGJ_20220828T210941_SCL_20m.jp2"))
+
+# 2023
+scl_2023 <- rast(here("lahaina_data", "T04QGJ_20230803T210931_SCL_20m.jp2"))
+
+# 2024
+scl_2024 <- rast(here("lahaina_data", "T04QGJ_20240807T210921_SCL_20m.jp2"))
+
+# 2025
+scl_2025 <- rast(here("lahaina_data", "T04QGJ_20250802T210941_SCL_20m.jp2"))
+
+```
+
+# Data alignment
+
+```{r}
+scl_2022_20 <- resample(scl_2022, ndvi_2022_maui, method = "near")
+scl_2023_20 <- resample(scl_2023, ndvi_2023_maui, method = "near")
+scl_2024_20 <- resample(scl_2024, ndvi_2024_maui, method = "near")
+scl_2025_20 <- resample(scl_2025, ndvi_2025_maui, method = "near")
+```
+
+# NDVI calculations
+
+```{r}
+ndvi_2022_clean <- mask(ndvi_2022_maui, scl_2022_20, maskvalue = c(3,8,9,10,11))
+ndvi_2023_clean <- mask(ndvi_2023_maui, scl_2023_20, maskvalue = c(3,8,9,10,11))
+ndvi_2024_clean <- mask(ndvi_2024_maui, scl_2024_20, maskvalue = c(3,8,9,10,11))
+ndvi_2025_clean <- mask(ndvi_2025_maui, scl_2025_20, maskvalue = c(3,8,9,10,11))
+```
+
+# Mask Cloud Maps
+
+```{r}
+# ---------------------------
+# Step 6: Downsample for plotting
+# ---------------------------
+fact_size <- 4
+ndvi_2022_small <- aggregate(ndvi_2022_clean, fact = fact_size, fun = mean)
+ndvi_2023_small <- aggregate(ndvi_2023_clean, fact = fact_size, fun = mean)
+ndvi_2024_small <- aggregate(ndvi_2024_clean, fact = fact_size, fun = mean)
+ndvi_2025_small <- aggregate(ndvi_2025_clean, fact = fact_size, fun = mean)
+
+# ---------------------------
+# Step 7: Define breaks & colors
+# ---------------------------
+breaks <- c(-1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1)
+colors <- c("#4A90E2","#CD853F","#DEB887","#F0E68C","#ADFF2F","#32CD32","#228B22","#006400")
+
+# ---------------------------
+# Step 8: Create interactive maps
+# ---------------------------
+mapview(ndvi_2022_small, at = breaks, col.regions = colors, layer.name = "NDVI 2022", alpha = 0.8)
+mapview(ndvi_2023_small, at = breaks, col.regions = colors, layer.name = "NDVI 2023", alpha = 0.8)
+mapview(ndvi_2024_small, at = breaks, col.regions = colors, layer.name = "NDVI 2024", alpha = 0.8)
+mapview(ndvi_2025_small, at = breaks, col.regions = colors, layer.name = "NDVI 2025", alpha = 0.8)
+```
