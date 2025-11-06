@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>hawaii_ag_land_change</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="hawaii_ag_land_change_files/libs/clipboard/clipboard.min.js"></script>
+<script src="hawaii_ag_land_change_files/libs/quarto-html/quarto.js"></script>
+<script src="hawaii_ag_land_change_files/libs/quarto-html/popper.min.js"></script>
+<script src="hawaii_ag_land_change_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="hawaii_ag_land_change_files/libs/quarto-html/anchor.min.js"></script>
+<link href="hawaii_ag_land_change_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="hawaii_ag_land_change_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="hawaii_ag_land_change_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="hawaii_ag_land_change_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="hawaii_ag_land_change_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="exploring-agricultural-land-use-change-in-hawaiʻi-2015-2020" class="level1">
+<h1>Exploring Agricultural Land Use Change in Hawaiʻi (2015 → 2020)</h1>
+<p><strong>DS422 — Geocomputation in R</strong></p>
+<p>In this mini-project, you will explore how agricultural land use has changed across Hawaiʻi between 2015 and 2020, using openly available geospatial datasets from the Hawaiʻi Statewide GIS Program. You will create maps, conduct spatial comparisons, and communicate changes in land use through engaging and informative visual storytelling.</p>
+<hr>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">✅ Data</h2>
+<p>Download the GeoJSON files and place both in your <code>data/</code> folder in your <strong>DS422-Geocomputation</strong> project:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 42%">
+<col style="width: 28%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Year</th>
+<th>Dataset</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2015</td>
+<td>Agricultural Land Use Baseline</td>
+<td>https://geoportal.hawaii.gov/datasets/HiStateGIS::agricultural-land-use-2015-baseline/about</td>
+</tr>
+<tr class="even">
+<td>2020</td>
+<td>Hawaiʻi Agricultural Lands</td>
+<td>https://geoportal.hawaii.gov/items/342ee6c7547f45ddbfc07caf4ca2887d</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="software-tools-you-may-want-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="software-tools-you-may-want-to-use">✅ Software Tools You May Want to Use</h2>
+<p>Mapping &amp; Visualization: - <a href="https://r-spatial.github.io/mapview/"><code>mapview</code></a> — fast interactive mapping - <a href="https://r-spatial.github.io/mapgl/"><code>mapgl</code></a> — advanced vector tile maps - <a href="https://cran.r-project.org/package=tmap"><code>tmap</code></a> — powerful thematic mapping - <a href="https://rstudio.github.io/leaflet/"><code>leaflet</code></a> — interactive web mapping - <a href="https://ggplot2.tidyverse.org/"><code>ggplot2</code></a> — publication-quality mapping with <code>geom_sf()</code></p>
+<p>Data Wrangling &amp; Tables: - <a href="https://dplyr.tidyverse.org/"><code>dplyr</code></a> - <a href="https://tidyr.tidyverse.org/"><code>tidyr</code></a> - <a href="https://readr.tidyverse.org/"><code>readr</code></a> - <a href="https://r-spatial.github.io/sf/"><code>sf</code></a> — essential for spatial data handling</p>
+<p>Color &amp; Classification: - <a href="https://cran.r-project.org/package=RColorBrewer"><code>RColorBrewer</code></a> - <a href="https://cran.r-project.org/package=viridis"><code>viridis</code></a> - <a href="https://cran.r-project.org/package=classInt"><code>classInt</code></a></p>
+<p>Flow Visualization: - <a href="https://corybrunson.github.io/ggalluvial/"><code>ggalluvial</code></a> — Sankey-style flows - <a href="https://christophergandrud.github.io/networkD3/"><code>networkD3</code></a> — interactive flow diagrams</p>
+<p>Popups &amp; Interactivity: - <a href="https://r-spatial.github.io/leafpop/"><code>leafpop</code></a></p>
+<p>You do <em>not</em> need to use all of these — just explore what supports your creative ideas.</p>
+<hr>
+</section>
+<section id="questions-to-inspire-you" class="level2">
+<h2 class="anchored" data-anchor-id="questions-to-inspire-you">✅ Questions to Inspire You</h2>
+<p>Pick a few that interest you — or create your own!</p>
+<section id="cartographic-design" class="level3">
+<h3 class="anchored" data-anchor-id="cartographic-design">🗺️ Cartographic Design</h3>
+<ul>
+<li>What is the <strong>highest-quality map</strong> you can create with this data?</li>
+<li>How can you improve user experience with:
+<ul>
+<li>styling, legends, labeling, basemaps, accessibility?</li>
+</ul></li>
+</ul>
+</section>
+<section id="change-in-agricultural-land" class="level3">
+<h3 class="anchored" data-anchor-id="change-in-agricultural-land">🌱 Change in Agricultural Land</h3>
+<ul>
+<li>Is there <strong>more or less</strong> agricultural land in 2020 compared to 2015?</li>
+<li>How much did agricultural acreage change <strong>overall</strong>?</li>
+<li>Which islands gained or lost the most?</li>
+<li>What is the <strong>percent change</strong> in total agricultural land?</li>
+</ul>
+</section>
+<section id="crop-type-changes" class="level3">
+<h3 class="anchored" data-anchor-id="crop-type-changes">🌺 Crop Type Changes</h3>
+<ul>
+<li>Which specific crop categories <strong>increased or decreased</strong> the most?</li>
+<li>Can you align crop names between 2015 and 2020 to make valid comparisons?</li>
+<li>Can you represent crop transitions with a <strong>Sankey diagram</strong>?</li>
+</ul>
+</section>
+<section id="spatial-change-detection" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-change-detection">🗺️ Spatial Change Detection</h3>
+<ul>
+<li>Where did land shift <strong>into</strong> agriculture?</li>
+<li>Where did agriculture convert to <strong>other uses</strong>?</li>
+<li>Can you produce a <strong>gain/loss</strong> map of agricultural land?</li>
+<li>Can you map specific crop conversions (e.g., Coffee → Pasture)?</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="creative-expansion-ideas" class="level2">
+<h2 class="anchored" data-anchor-id="creative-expansion-ideas">⭐ Creative Expansion Ideas</h2>
+<p>These are optional, but may spark ideas: - Compare <strong>island-level</strong> land use change - Create a <strong>story map</strong> or interactive dashboard - Add <strong>contextual layers</strong> such as roads or county boundaries - Focus on one island to provide a <strong>deep spatial narrative</strong> - Provide <strong>policy or environmental implications</strong> of these changes</p>
+<hr>
+</section>
+<section id="deliverable" class="level2">
+<h2 class="anchored" data-anchor-id="deliverable">🎯 Deliverable</h2>
+<p>Your mini-presentation should: ✅ Ask an interesting question<br>
+✅ Analyze change over time and space<br>
+✅ Include at least one map and one additional visual<br>
+✅ Clearly explain why your findings matter</p>
+<p>📌 During the <strong>last 20 minutes of class</strong>, each student will: - Share their screen - Present <strong>for 2 minutes</strong> - Show the <strong>map(s)</strong> and <strong>insights</strong> they are most proud of</p>
+<hr>
+</section>
+<section id="your-turn" class="level2">
+<h2 class="anchored" data-anchor-id="your-turn">🧠 Your Turn</h2>
+<p>You are encouraged to: - Explore - Experiment - Tell a spatial story</p>
+<p>Agricultural land in Hawaiʻi is changing — what can you reveal about <em>how</em> and <em>why</em>?</p>
+<p>library(sf)<br>
+library(dplyr)<br>
+library(ggplot2)<br>
+library(viridis)<br>
+library(ggalluvial) library(stringr)<br>
+library(tidyr)<br>
+library(mapview)<br>
+library(forcats)</p>
+<p>agri_2015 &lt;- st_read(“data/Agricultural_Land_Use_-<em>2015_Baseline.geojson”) agri_2020 &lt;- st_read(“data/Agricultural_Land_Use</em>-_2020_Update.geojson”)</p>
+<p>agri_2015_clean &lt;- agri_2015 %&gt;% select(island, crop_2015 = cropcatego, acreage_2015 = acreage)</p>
+<p>agri_2020_clean &lt;- agri_2020 %&gt;% select(island, crop_2020 = crops_2020, acreage_2020 = acreage)</p>
+<p>agri_2015_area &lt;- agri_2015_clean %&gt;% st_drop_geometry() %&gt;% group_by(crop_2015) %&gt;% summarise(total_acres_2015 = sum(acreage_2015, na.rm = TRUE))</p>
+<p>agri_2020_area &lt;- agri_2020_clean %&gt;% st_drop_geometry() %&gt;% group_by(crop_2020) %&gt;% summarise(total_acres_2020 = sum(acreage_2020, na.rm = TRUE))</p>
+<p>crop_change &lt;- full_join( agri_2015_area, agri_2020_area, by = c(“crop_2015” = “crop_2020”) ) %&gt;% rename(crop_type = crop_2015) %&gt;% mutate( total_acres_2015 = as.numeric(total_acres_2015), total_acres_2020 = as.numeric(total_acres_2020), change_acres = total_acres_2020 - total_acres_2015, pct_change = 100 * (change_acres / total_acres_2015) ) %&gt;% arrange(desc(change_acres))</p>
+<p>flow_data &lt;- crop_change %&gt;% select(crop_type, total_acres_2015, total_acres_2020) %&gt;% pivot_longer(cols = starts_with(“total_acres_”), names_to = “year”, values_to = “acreage”) %&gt;% mutate(year = recode(year, “total_acres_2015” = “2015”, “total_acres_2020” = “2020”))</p>
+<p>ggplot(flow_data, aes(x = year, stratum = crop_type, alluvium = crop_type, y = acreage, fill = crop_type, label = crop_type)) + geom_flow(alpha = 0.6) + geom_stratum() + scale_fill_viridis_d(option = “turbo”) + labs( title = “Crop Type Transitions in Hawaiʻi Agriculture (2015 → 2020)”, subtitle = “Visualizing shifts in agricultural land area”, y = “Acreage”, x = “Year”, caption = “Source: Hawaiʻi Statewide GIS Program” ) + theme_minimal(base_size = 14) + theme(legend.position = “right”)</p>
+<p>island_crop_change &lt;- full_join( agri_2015_clean %&gt;% st_drop_geometry() %&gt;% group_by(island, crop_2015) %&gt;% summarise(acres_2015 = sum(acreage_2015, na.rm = TRUE)), agri_2020_clean %&gt;% st_drop_geometry() %&gt;% group_by(island, crop_2020) %&gt;% summarise(acres_2020 = sum(acreage_2020, na.rm = TRUE)), by = c(“island”, “crop_2015” = “crop_2020”) ) %&gt;% rename(crop_type = crop_2015) %&gt;% mutate(change_acres = acres_2020 - acres_2015)</p>
+<p>ggplot(island_crop_change, aes(x = reorder(crop_type, change_acres), y = change_acres, fill = island)) + geom_col(position = “dodge”) + coord_flip() + labs( title = “Change in Crop Acreage by Island (2015 → 2020)”, x = “Crop Type”, y = “Change in Acreage”, caption = “Source: Hawaiʻi Statewide GIS Program” ) + theme_minimal(base_size = 13)</p>
+<p>total_change &lt;- agri_2015_clean %&gt;% st_drop_geometry() %&gt;% summarise(total_2015 = sum(acreage_2015, na.rm = TRUE)) %&gt;% bind_cols( agri_2020_clean %&gt;% st_drop_geometry() %&gt;% summarise(total_2020 = sum(acreage_2020, na.rm = TRUE)) ) %&gt;% mutate( change_acres = total_2020 - total_2015, pct_change = 100 * (change_acres / total_2015) )</p>
+<p>print(total_change)</p>
+<p>agri_2015_map &lt;- agri_2015_clean %&gt;% st_transform(4326) agri_2020_map &lt;- agri_2020_clean %&gt;% st_transform(4326)</p>
+<p>mapviewOptions(basemaps = c(“CartoDB.Positron”, “Esri.WorldImagery”))</p>
+<p>map_2015 &lt;- mapview( agri_2015_map, zcol = “crop_2015”, layer.name = “Agricultural Land (2015)”, legend = TRUE )</p>
+<p>map_2020 &lt;- mapview( agri_2020_map, zcol = “crop_2020”, layer.name = “Agricultural Land (2020)”, legend = TRUE )</p>
+<p>map_2015 + map_2020</p>
+</section>
+</section>
+<section id="make-sure-geometries-are-valid" class="level1">
+<h1>Make sure geometries are valid</h1>
+<p>agri_2015_valid &lt;- st_make_valid(st_union(agri_2015_map)) agri_2020_valid &lt;- st_make_valid(st_union(agri_2020_map))</p>
+</section>
+<section id="compute-gainloss-areas" class="level1">
+<h1>Compute gain/loss areas</h1>
+<p>gain_geom &lt;- suppressWarnings(st_difference(agri_2020_valid, agri_2015_valid)) loss_geom &lt;- suppressWarnings(st_difference(agri_2015_valid, agri_2020_valid))</p>
+</section>
+<section id="only-include-non-empty-geometries" class="level1">
+<h1>Only include non-empty geometries</h1>
+<p>gain_loss &lt;- st_sf( change_type = c(“Gain”, “Loss”), geometry = st_sfc( if (!st_is_empty(gain_geom)) gain_geom else st_geometrycollection(), if (!st_is_empty(loss_geom)) loss_geom else st_geometrycollection() ), crs = 4326 )</p>
+</section>
+<section id="map-gainloss" class="level1">
+<h1>Map gain/loss</h1>
+<p>mapview(gain_loss, zcol = “change_type”, layer.name = “Agricultural Change (2015–2020)”, col.regions = c(“forestgreen”, “firebrick”), legend = TRUE)</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
