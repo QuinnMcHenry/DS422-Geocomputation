@@ -1,0 +1,279 @@
+# Exploring Agricultural Land Use Change in Hawaiʻi (2015 → 2020)
+**DS422 — Geocomputation in R**
+
+In this mini-project, you will explore how agricultural land use has changed across Hawaiʻi between 2015 and 2020, using openly available geospatial datasets from the Hawaiʻi Statewide GIS Program. You will create maps, conduct spatial comparisons, and communicate changes in land use through engaging and informative visual storytelling.
+
+---
+
+## ✅ Data
+
+Download the GeoJSON files and place both in your `data/` folder in your **DS422-Geocomputation** project:
+
+| Year | Dataset | Link |
+|------|---------|------|
+| 2015 | Agricultural Land Use Baseline | https://geoportal.hawaii.gov/datasets/HiStateGIS::agricultural-land-use-2015-baseline/about |
+| 2020 | Hawaiʻi Agricultural Lands | https://geoportal.hawaii.gov/items/342ee6c7547f45ddbfc07caf4ca2887d |
+
+---
+
+## ✅ Software Tools You May Want to Use
+
+Mapping & Visualization:
+- [`mapview`](https://r-spatial.github.io/mapview/) — fast interactive mapping
+- [`mapgl`](https://r-spatial.github.io/mapgl/) — advanced vector tile maps
+- [`tmap`](https://cran.r-project.org/package=tmap) — powerful thematic mapping
+- [`leaflet`](https://rstudio.github.io/leaflet/) — interactive web mapping
+- [`ggplot2`](https://ggplot2.tidyverse.org/) — publication-quality mapping with `geom_sf()`
+
+Data Wrangling & Tables:
+- [`dplyr`](https://dplyr.tidyverse.org/)
+- [`tidyr`](https://tidyr.tidyverse.org/)
+- [`readr`](https://readr.tidyverse.org/)
+- [`sf`](https://r-spatial.github.io/sf/) — essential for spatial data handling
+
+Color & Classification:
+- [`RColorBrewer`](https://cran.r-project.org/package=RColorBrewer)
+- [`viridis`](https://cran.r-project.org/package=viridis)
+- [`classInt`](https://cran.r-project.org/package=classInt)
+
+Flow Visualization:
+- [`ggalluvial`](https://corybrunson.github.io/ggalluvial/) — Sankey-style flows
+- [`networkD3`](https://christophergandrud.github.io/networkD3/) — interactive flow diagrams
+
+Popups & Interactivity:
+- [`leafpop`](https://r-spatial.github.io/leafpop/)
+
+You do *not* need to use all of these — just explore what supports your creative ideas.
+
+---
+
+## ✅ Questions to Inspire You
+
+Pick a few that interest you — or create your own!
+
+### 🗺️ Cartographic Design
+- What is the **highest-quality map** you can create with this data?
+- How can you improve user experience with:
+  - styling, legends, labeling, basemaps, accessibility?
+
+### 🌱 Change in Agricultural Land
+- Is there **more or less** agricultural land in 2020 compared to 2015?
+- How much did agricultural acreage change **overall**?
+- Which islands gained or lost the most?
+- What is the **percent change** in total agricultural land?
+
+### 🌺 Crop Type Changes
+- Which specific crop categories **increased or decreased** the most?
+- Can you align crop names between 2015 and 2020 to make valid comparisons?
+- Can you represent crop transitions with a **Sankey diagram**?
+
+### 🗺️ Spatial Change Detection
+- Where did land shift **into** agriculture?
+- Where did agriculture convert to **other uses**?
+- Can you produce a **gain/loss** map of agricultural land?
+- Can you map specific crop conversions (e.g., Coffee → Pasture)?
+
+---
+
+## ⭐ Creative Expansion Ideas
+
+These are optional, but may spark ideas:
+- Compare **island-level** land use change
+- Create a **story map** or interactive dashboard
+- Add **contextual layers** such as roads or county boundaries
+- Focus on one island to provide a **deep spatial narrative**
+- Provide **policy or environmental implications** of these changes
+
+---
+
+## 🎯 Deliverable
+
+Your mini-presentation should:
+✅ Ask an interesting question  
+✅ Analyze change over time and space  
+✅ Include at least one map and one additional visual  
+✅ Clearly explain why your findings matter  
+
+📌 During the **last 20 minutes of class**, each student will:
+- Share their screen
+- Present **for 2 minutes**
+- Show the **map(s)** and **insights** they are most proud of
+
+---
+
+## 🧠 Your Turn
+
+You are encouraged to:
+- Explore
+- Experiment
+- Tell a spatial story
+
+Agricultural land in Hawaiʻi is changing — what can you reveal about *how* and *why*?
+
+
+library(sf)   
+library(dplyr)  
+library(ggplot2)   
+library(viridis)    
+library(ggalluvial) 
+library(stringr)     
+library(tidyr)       
+library(mapview)     
+library(forcats)
+
+
+agri_2015 <- st_read("data/Agricultural_Land_Use_-_2015_Baseline.geojson")
+agri_2020 <- st_read("data/Agricultural_Land_Use_-_2020_Update.geojson")
+
+
+agri_2015_clean <- agri_2015 %>%
+  select(island, crop_2015 = cropcatego, acreage_2015 = acreage)
+
+agri_2020_clean <- agri_2020 %>%
+  select(island, crop_2020 = crops_2020, acreage_2020 = acreage)
+
+
+agri_2015_area <- agri_2015_clean %>%
+  st_drop_geometry() %>%
+  group_by(crop_2015) %>%
+  summarise(total_acres_2015 = sum(acreage_2015, na.rm = TRUE))
+
+agri_2020_area <- agri_2020_clean %>%
+  st_drop_geometry() %>%
+  group_by(crop_2020) %>%
+  summarise(total_acres_2020 = sum(acreage_2020, na.rm = TRUE))
+
+crop_change <- full_join(
+  agri_2015_area,
+  agri_2020_area,
+  by = c("crop_2015" = "crop_2020")
+) %>%
+  rename(crop_type = crop_2015) %>%
+  mutate(
+    total_acres_2015 = as.numeric(total_acres_2015),
+    total_acres_2020 = as.numeric(total_acres_2020),
+    change_acres = total_acres_2020 - total_acres_2015,
+    pct_change = 100 * (change_acres / total_acres_2015)
+  ) %>%
+  arrange(desc(change_acres))
+
+
+flow_data <- crop_change %>%
+  select(crop_type, total_acres_2015, total_acres_2020) %>%
+  pivot_longer(cols = starts_with("total_acres_"),
+               names_to = "year",
+               values_to = "acreage") %>%
+  mutate(year = recode(year,
+                       "total_acres_2015" = "2015",
+                       "total_acres_2020" = "2020"))
+
+ggplot(flow_data,
+       aes(x = year,
+           stratum = crop_type,
+           alluvium = crop_type,
+           y = acreage,
+           fill = crop_type,
+           label = crop_type)) +
+  geom_flow(alpha = 0.6) +
+  geom_stratum() +
+  scale_fill_viridis_d(option = "turbo") +
+  labs(
+    title = "Crop Type Transitions in Hawaiʻi Agriculture (2015 → 2020)",
+    subtitle = "Visualizing shifts in agricultural land area",
+    y = "Acreage",
+    x = "Year",
+    caption = "Source: Hawaiʻi Statewide GIS Program"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "right")
+
+
+island_crop_change <- full_join(
+  agri_2015_clean %>%
+    st_drop_geometry() %>%
+    group_by(island, crop_2015) %>%
+    summarise(acres_2015 = sum(acreage_2015, na.rm = TRUE)),
+  agri_2020_clean %>%
+    st_drop_geometry() %>%
+    group_by(island, crop_2020) %>%
+    summarise(acres_2020 = sum(acreage_2020, na.rm = TRUE)),
+  by = c("island", "crop_2015" = "crop_2020")
+) %>%
+  rename(crop_type = crop_2015) %>%
+  mutate(change_acres = acres_2020 - acres_2015)
+
+ggplot(island_crop_change,
+       aes(x = reorder(crop_type, change_acres),
+           y = change_acres,
+           fill = island)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(
+    title = "Change in Crop Acreage by Island (2015 → 2020)",
+    x = "Crop Type",
+    y = "Change in Acreage",
+    caption = "Source: Hawaiʻi Statewide GIS Program"
+  ) +
+  theme_minimal(base_size = 13)
+
+
+total_change <- agri_2015_clean %>%
+  st_drop_geometry() %>%
+  summarise(total_2015 = sum(acreage_2015, na.rm = TRUE)) %>%
+  bind_cols(
+    agri_2020_clean %>%
+      st_drop_geometry() %>%
+      summarise(total_2020 = sum(acreage_2020, na.rm = TRUE))
+  ) %>%
+  mutate(
+    change_acres = total_2020 - total_2015,
+    pct_change = 100 * (change_acres / total_2015)
+  )
+
+print(total_change)
+
+agri_2015_map <- agri_2015_clean %>% st_transform(4326)
+agri_2020_map <- agri_2020_clean %>% st_transform(4326)
+
+mapviewOptions(basemaps = c("CartoDB.Positron", "Esri.WorldImagery"))
+
+map_2015 <- mapview(
+  agri_2015_map, zcol = "crop_2015",
+  layer.name = "Agricultural Land (2015)",
+  legend = TRUE
+)
+
+map_2020 <- mapview(
+  agri_2020_map, zcol = "crop_2020",
+  layer.name = "Agricultural Land (2020)",
+  legend = TRUE
+)
+
+map_2015 + map_2020
+
+
+# Make sure geometries are valid
+agri_2015_valid <- st_make_valid(st_union(agri_2015_map))
+agri_2020_valid <- st_make_valid(st_union(agri_2020_map))
+
+# Compute gain/loss areas
+gain_geom <- suppressWarnings(st_difference(agri_2020_valid, agri_2015_valid))
+loss_geom <- suppressWarnings(st_difference(agri_2015_valid, agri_2020_valid))
+
+# Only include non-empty geometries
+gain_loss <- st_sf(
+  change_type = c("Gain", "Loss"),
+  geometry = st_sfc(
+    if (!st_is_empty(gain_geom)) gain_geom else st_geometrycollection(),
+    if (!st_is_empty(loss_geom)) loss_geom else st_geometrycollection()
+  ),
+  crs = 4326
+)
+
+# Map gain/loss
+mapview(gain_loss,
+        zcol = "change_type",
+        layer.name = "Agricultural Change (2015–2020)",
+        col.regions = c("forestgreen", "firebrick"),
+        legend = TRUE)
+
